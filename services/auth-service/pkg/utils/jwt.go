@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/ed25519"
 	"errors"
 	"time"
 
@@ -19,7 +20,7 @@ var (
 	ErrExpiredToken = errors.New("token has expired")
 )
 
-func GenerateAccessToken(userID int64, email, secret string, ttlMinutes int) (string, error) {
+func GenerateAccessToken(userID int64, email string, privateKey ed25519.PrivateKey, ttlMinutes int) (string, error) {
 
 	claims := Claims{
 		UserID:    userID,
@@ -31,11 +32,11 @@ func GenerateAccessToken(userID int64, email, secret string, ttlMinutes int) (st
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	return token.SignedString(privateKey)
 }
 
-func GenerateRefreshToken(userID int64, secret string, ttlDays int) (string, error) {
+func GenerateRefreshToken(userID int64, privateKey ed25519.PrivateKey, ttlDays int) (string, error) {
 
 	claims := Claims{
 		UserID:    userID,
@@ -46,16 +47,16 @@ func GenerateRefreshToken(userID int64, secret string, ttlDays int) (string, err
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	return token.SignedString(privateKey)
 }
 
-func ValidateToken(tokenString, secret string) (*Claims, error) {
+func ValidateToken(tokenString string, publicKey ed25519.PublicKey) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := t.Method.(*jwt.SigningMethodEd25519); !ok {
 			return nil, ErrInvalidToken
 		}
-		return []byte(secret), nil
+		return publicKey, nil
 	})
 
 	if err != nil {

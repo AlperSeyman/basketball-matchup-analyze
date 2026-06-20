@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/ed25519"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func RequireAuth(secret string, rdb *redis.Client) gin.HandlerFunc {
+func RequireAuth(publicKey ed25519.PublicKey, rdb *redis.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -20,7 +21,7 @@ func RequireAuth(secret string, rdb *redis.Client) gin.HandlerFunc {
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
 			slog.Warn("invalid authorization header format", "path", c.Request.URL.Path)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
@@ -28,7 +29,7 @@ func RequireAuth(secret string, rdb *redis.Client) gin.HandlerFunc {
 
 		tokenString := parts[1]
 
-		claims, err := utils.ValidateToken(tokenString, secret)
+		claims, err := utils.ValidateToken(tokenString, publicKey)
 		if err != nil {
 			slog.Warn("invalid token", "error", err, "path", c.Request.URL.Path)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})

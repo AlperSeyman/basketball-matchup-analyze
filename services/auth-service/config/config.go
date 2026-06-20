@@ -2,6 +2,11 @@ package config
 
 import (
 	"context"
+	"crypto/ed25519"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -16,7 +21,8 @@ import (
 type Config struct {
 	DBUrl                 string
 	RedisUrl              string
-	JWTSecret             string
+	JWTPrivateKey         ed25519.PrivateKey
+	JWTPublicKey          ed25519.PublicKey
 	AccessTokenTTLMinutes int
 	RefreshTokenTTLDays   int
 	Port                  string
@@ -33,13 +39,11 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	jwtSecret, err := requireEnv("JWT_SECRET")
+	privateKey, err := loadEd25519PrivateKey()
 	if err != nil {
 		return nil, err
 	}
-	if len(jwtSecret) < 32 {
-		return nil, fmt.Errorf("JWT_SECRET must be at least 32 characters, got %d", len(jwtSecret))
-	}
+	publicKey := privateKey.Public().(ed25519.PublicKey)
 
 	accessTTL, err := getIntEnv("JWT_ACCESS_TOKEN_TTL_MINUTES", 15)
 	if err != nil {
@@ -54,12 +58,44 @@ func Load() (*Config, error) {
 	return &Config{
 		DBUrl:                 dbUrl,
 		RedisUrl:              getEnv("REDIS_URL", "redis://localhost:6379/0"),
-		JWTSecret:             jwtSecret,
+		JWTPrivateKey:         privateKey,
+		JWTPublicKey:          publicKey,
 		AccessTokenTTLMinutes: accessTTL,
 		RefreshTokenTTLDays:   refreshTTL,
 		Port:                  getEnv("AUTH_SERVICE_PORT", "8001"),
 		Environment:           getEnv("ENVIRONMENT", "development"),
 	}, nil
+}
+
+// loadEd25519PrivateKey reads JWT_PRIVATE_KEY_BASE64 (a base64-encoded PEM
+// Ed25519 private key), decodes it, and parses it into a usable key.
+func loadEd25519PrivateKey() (ed25519.PrivateKey, error) {
+	b64, err := requireEnv("JWT_PRIVATE_KEY_BASE64")
+	if err != nil {
+		return nil, err
+	}
+
+	pemBytes, err := base64.StdEncoding.DecodeString(b64)
+	if err != nil {
+		return nil, fmt.Errorf("JWT_PRIVATE_KEY_BASE64 is not valid base64: %w", err)
+	}
+
+	block, _ := pem.Decode(pemBytes)
+	if block == nil {
+		return nil, errors.New("JWT_PRIVATE_KEY_BASE64 does not contain a valid PEM block")
+	}
+
+	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse Ed25519 private key: %w", err)
+	}
+
+	edKey, ok := key.(ed25519.PrivateKey)
+	if !ok {
+		return nil, errors.New("JWT_PRIVATE_KEY_BASE64 is not an Ed25519 private key")
+	}
+
+	return edKey, nil
 }
 
 func ConnectDb(cfg *Config) (*pgxpool.Pool, error) {

@@ -89,14 +89,14 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := utils.GenerateAccessToken(user.ID, user.Email, h.cfg.JWTSecret, h.cfg.AccessTokenTTLMinutes)
+	accessToken, err := utils.GenerateAccessToken(user.ID, user.Email, h.cfg.JWTPrivateKey, h.cfg.AccessTokenTTLMinutes)
 	if err != nil {
 		slog.Error("failed to generate access token", "error", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{Error: "internal server error"})
 		return
 	}
 
-	refreshToken, err := utils.GenerateRefreshToken(user.ID, h.cfg.JWTSecret, h.cfg.RefreshTokenTTLDays)
+	refreshToken, err := utils.GenerateRefreshToken(user.ID, h.cfg.JWTPrivateKey, h.cfg.RefreshTokenTTLDays)
 	if err != nil {
 		slog.Error("failed to generate refresh token", "error", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{Error: "internal server error"})
@@ -121,7 +121,7 @@ func (h *Handler) Logout(c *gin.Context) {
 	parts := strings.SplitN(authHeader, " ", 2)
 	if len(parts) == 2 {
 		accessToken := parts[1]
-		claims, err := utils.ValidateToken(accessToken, h.cfg.JWTSecret)
+		claims, err := utils.ValidateToken(accessToken, h.cfg.JWTPublicKey)
 		if err == nil {
 			ttl := time.Until(claims.ExpiresAt.Time)
 			if ttl > 0 {
@@ -134,7 +134,7 @@ func (h *Handler) Logout(c *gin.Context) {
 
 	refreshToken, err := c.Cookie("refresh_token")
 	if err == nil && refreshToken != "" {
-		claims, err := utils.ValidateToken(refreshToken, h.cfg.JWTSecret)
+		claims, err := utils.ValidateToken(refreshToken, h.cfg.JWTPublicKey)
 		if err == nil {
 			ttl := time.Until(claims.ExpiresAt.Time)
 			if ttl > 0 {
@@ -162,7 +162,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	claims, err := utils.ValidateToken(refreshToken, h.cfg.JWTSecret)
+	claims, err := utils.ValidateToken(refreshToken, h.cfg.JWTPublicKey)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, model.ErrorResponse{Error: "invalid or expired refresh token"})
 		return
@@ -202,7 +202,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{Error: "internal server error"})
 		return
 	}
-	accessToken, err := utils.GenerateAccessToken(user.ID, user.Email, h.cfg.JWTSecret, h.cfg.AccessTokenTTLMinutes)
+	accessToken, err := utils.GenerateAccessToken(user.ID, user.Email, h.cfg.JWTPrivateKey, h.cfg.AccessTokenTTLMinutes)
 
 	if err != nil {
 		slog.Error("failed to generate access token", "error", err)
@@ -210,7 +210,7 @@ func (h *Handler) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	newRefreshToken, err := utils.GenerateRefreshToken(user.ID, h.cfg.JWTSecret, h.cfg.RefreshTokenTTLDays)
+	newRefreshToken, err := utils.GenerateRefreshToken(user.ID, h.cfg.JWTPrivateKey, h.cfg.RefreshTokenTTLDays)
 	if err != nil {
 		slog.Error("failed to generate refresh token", "error", err)
 		c.JSON(http.StatusInternalServerError, model.ErrorResponse{Error: "internal server error"})
@@ -270,7 +270,7 @@ func (h *Handler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	// TODO: send rawToken to user.Email via SendGrig
+	// TODO: send rawToken to user.Email via SendGrid
 
 	c.JSON(http.StatusOK, model.SuccessResponse{
 		Success: true,
@@ -366,7 +366,7 @@ func (h *Handler) ChangePassword(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, model.SuccessResponse{
 		Success: true,
-		Message: "pasword change",
+		Message: "password changed",
 	})
 
 }
