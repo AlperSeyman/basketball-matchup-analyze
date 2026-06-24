@@ -1,3 +1,2 @@
 models:
-  claude: claude-sonnet-4-6
-  gemini: gemini-3.5
+  gemini: gemini-3.5-flash
