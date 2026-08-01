@@ -7,6 +7,7 @@ from sqlalchemy import URL
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from dotenv import load_dotenv
+from functools import lru_cache
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ class Config:
     rate_limit_per_hour: int
     db_sslmode: str
 
-
+@lru_cache
 def load() -> Config:
     db_url = _build_db_url()
     jwt_public_key = _load_jwt_public_key()

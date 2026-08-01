@@ -35,3 +35,10 @@ frontend/.vite/
 .idea/
 .vscode/
 *.swp
+
+# ML training data (gigabytes — never commit)
+ml/data/*
+!ml/data/*.py
+
+# ML trained model files (generated output, regenerate via train_model.py)
+ml/models/
