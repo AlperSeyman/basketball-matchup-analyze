@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -12,7 +14,7 @@ const handleLogin = async () => {
     errorMessage.value = ''
     try {
         await authStore.login(email.value, password.value)
-        console.log('login successful, , token: ', authStore.accessToken)
+        router.push({name: 'profile'})
     } catch (error: any){
         errorMessage.value = error.response?.data?.error ?? 'Login failed.'
     }
