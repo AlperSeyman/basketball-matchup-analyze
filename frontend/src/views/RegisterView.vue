@@ -27,7 +27,7 @@ const handleRegister = async () => {
             email: email.value,
             password: password.value,
         })
-        router.push('/login')
+        router.push({ name: 'login'})
     } catch (error: any) {
         errorMessage.value = error.response?.data?.error ?? 'Registration failed.'
     }
@@ -60,6 +60,6 @@ const handleRegister = async () => {
         </div>
         <p v-if="errorMessage">{{ errorMessage }}</p>
         <button type="submit">Register</button>
-        <p>Already have an account? <RouterLink to="/login">Log in</RouterLink></p>
+        <p>Already have an account? <RouterLink :to="{name: 'login'}">Log in</RouterLink></p>
     </form>
 </template>

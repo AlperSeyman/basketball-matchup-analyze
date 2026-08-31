@@ -35,6 +35,7 @@ const handleLogin = async () => {
         </div>
         <p v-if="errorMessage">{{  errorMessage  }}</p>
         <button type="submit">Log In</button>
-        <p>Don't have an account? <RouterLink to="/register">Rei</RouterLink></p>
+        <p>Don't have an account? <RouterLink :to="{ name: 'register' }">Register</RouterLink></p>
+        <p><RouterLink :to="{ name: 'forgot-password' }">Forgot password?</RouterLink></p>
     </form>
 </template>
