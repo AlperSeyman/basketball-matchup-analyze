@@ -3,11 +3,16 @@ import { NDropdown, NButton, NSpace } from 'naive-ui'
 import { useLocalStorage } from '@vueuse/core'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
 const themePreference = useLocalStorage('theme-preference', 'system')
+
+const themeLabel = computed(() => {
+  return themePreference.value.charAt(0).toUpperCase() + themePreference.value.slice(1)
+})
 
 const themeOptions = [
   { label: 'Light', key: 'light' },
@@ -24,6 +29,7 @@ const handleLogout = async () => {
   router.push({ name: 'login' })
 }
 </script>
+
 
 <template>
   <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
@@ -42,7 +48,7 @@ const handleLogout = async () => {
       </template>
 
       <NDropdown :options="themeOptions" @select="handleThemeSelect">
-        <NButton text>Appearance: {{ themePreference }} ›</NButton>
+        <NButton quaternary size="small">{{ themeLabel }}</NButton>
       </NDropdown>
     </NSpace>
   </div>

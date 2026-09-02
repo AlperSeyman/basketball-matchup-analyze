@@ -33,7 +33,10 @@ const handleLogin = async () => {
       <NAlert v-if="errorMessage" type="error" style="margin-bottom: 16px;">{{ errorMessage }}</NAlert>
       <NButton type="primary" attr-type="submit" block>Log In</NButton>
     </form>
-    <p style="margin-top: 16px;">Don't have an account? <RouterLink :to="{ name: 'register' }">Register</RouterLink></p>
-    <p><RouterLink :to="{ name: 'forgot-password' }">Forgot password?</RouterLink></p>
+        <p style="margin-top: 16px;">
+      Don't have an account?
+      <NButton text @click="router.push({ name: 'register' })">Register</NButton>
+    </p>
+    <p><NButton text @click="router.push({ name: 'forgot-password' })">Forgot password?</NButton></p>
   </NCard>
 </template>
