@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { NCard, NForm, NFormItem, NInput, NButton, NAlert } from 'naive-ui'
 
 const router = useRouter()
 const email = ref('')
@@ -9,35 +10,30 @@ const password = ref('')
 const errorMessage = ref('')
 const authStore = useAuthStore()
 
-
 const handleLogin = async () => {
     errorMessage.value = ''
     try {
         await authStore.login(email.value, password.value)
-        router.push({name: 'profile'})
-    } catch (error: any){
+        router.push({ name: 'profile' })
+    } catch (error: any) {
         errorMessage.value = error.response?.data?.error ?? 'Login failed.'
     }
 }
-
 </script>
 
-
-
 <template>
-    <h1>Login</h1>
+  <NCard title="Login" style="max-width: 400px; margin: 40px auto;">
     <form @submit.prevent="handleLogin">
-        <div>
-            <label for="email">Email</label>
-            <input type="email" id="email" v-model="email">
-        </div>
-        <div>
-            <label for="password">Password</label>
-            <input type="password" id="password" v-model="password">
-        </div>
-        <p v-if="errorMessage">{{  errorMessage  }}</p>
-        <button type="submit">Log In</button>
-        <p>Don't have an account? <RouterLink :to="{ name: 'register' }">Register</RouterLink></p>
-        <p><RouterLink :to="{ name: 'forgot-password' }">Forgot password?</RouterLink></p>
+      <NFormItem label="Email">
+        <NInput v-model:value="email" />
+      </NFormItem>
+      <NFormItem label="Password">
+        <NInput v-model:value="password" type="password" show-password-on="click" />
+      </NFormItem>
+      <NAlert v-if="errorMessage" type="error" style="margin-bottom: 16px;">{{ errorMessage }}</NAlert>
+      <NButton type="primary" attr-type="submit" block>Log In</NButton>
     </form>
+    <p style="margin-top: 16px;">Don't have an account? <RouterLink :to="{ name: 'register' }">Register</RouterLink></p>
+    <p><RouterLink :to="{ name: 'forgot-password' }">Forgot password?</RouterLink></p>
+  </NCard>
 </template>
