@@ -33,7 +33,11 @@ const handleChangePassword = async () => {
     newPassword.value = ''
     newPasswordConfirm.value = ''
   } catch (error: any){
-    errorMessage.value = error.response?.data?.error ?? 'Password change failed.'
+    if (error.response?.status === 400){
+      errorMessage.value = 'Please check your information and try again.'
+    } else {
+      errorMessage.value = error.response?.data?.error ?? 'Password change failed.'
+    }
   }
 }
 </script>
@@ -43,13 +47,13 @@ const handleChangePassword = async () => {
   <NCard title="My Profile" style="max-width: 400px; margin: 40px auto;">
     <h3 style="margin-bottom: 16px;">Change Password</h3>
     <form @submit.prevent="handleChangePassword">
-      <NFormItem label="Current Password">
+      <NFormItem label="Current Password" required>
         <NInput v-model:value="currentPassword" type="password" show-password-on="click" />
       </NFormItem>
-      <NFormItem label="New Password">
+      <NFormItem label="New Password" required>
         <NInput v-model:value="newPassword" type="password" show-password-on="click" />
       </NFormItem>
-      <NFormItem label="Confirm New Password">
+      <NFormItem label="Confirm New Password" required>
         <NInput v-model:value="newPasswordConfirm" type="password" show-password-on="click" />
       </NFormItem>
       <NAlert v-if="passwordMismatch" type="warning" style="margin-bottom: 16px;">Passwords do not match.</NAlert>
