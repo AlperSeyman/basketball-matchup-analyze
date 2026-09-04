@@ -13,10 +13,14 @@ const authStore = useAuthStore()
 const handleLogin = async () => {
     errorMessage.value = ''
     try {
-        await authStore.login(email.value, password.value)
-        router.push({ name: 'profile' })
+      await authStore.login(email.value, password.value)
+      router.push({ name: 'profile' })
     } catch (error: any) {
+      if (error.response?.status === 400){
+        errorMessage.value = 'Please check your information and try again.'
+      } else {
         errorMessage.value = error.response?.data?.error ?? 'Login failed.'
+      }
     }
 }
 </script>
@@ -24,10 +28,10 @@ const handleLogin = async () => {
 <template>
   <NCard title="Login" style="max-width: 400px; margin: 40px auto;">
     <form @submit.prevent="handleLogin">
-      <NFormItem label="Email">
-        <NInput v-model:value="email" />
+      <NFormItem label="Email" required>
+      <NInput v-model:value="email" />
       </NFormItem>
-      <NFormItem label="Password">
+      <NFormItem label="Password" required>
         <NInput v-model:value="password" type="password" show-password-on="click" />
       </NFormItem>
       <NAlert v-if="errorMessage" type="error" style="margin-bottom: 16px;">{{ errorMessage }}</NAlert>

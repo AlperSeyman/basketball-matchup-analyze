@@ -34,7 +34,11 @@ const handleRegister = async () => {
         })
         router.push({ name: 'login' })
     } catch (error: any) {
+      if (error.response?.status === 400){
+        errorMessage.value = 'Please check your information and try again.'
+      } else {
         errorMessage.value = error.response?.data?.error ?? 'Registration failed.'
+      }
     }
 }
 </script>
@@ -42,19 +46,19 @@ const handleRegister = async () => {
 <template>
   <NCard title="Register" style="max-width: 400px; margin: 40px auto;">
     <form @submit.prevent="handleRegister">
-      <NFormItem label="First Name">
+      <NFormItem label="First Name" required>
         <NInput v-model:value="firstName" />
       </NFormItem>
-      <NFormItem label="Last Name">
+      <NFormItem label="Last Name" required>
         <NInput v-model:value="lastName" />
       </NFormItem>
-      <NFormItem label="Email">
+      <NFormItem label="Email" required>
         <NInput v-model:value="email" />
       </NFormItem>
-      <NFormItem label="Password">
+      <NFormItem label="Password" required>
         <NInput v-model:value="password" type="password" show-password-on="click" />
       </NFormItem>
-      <NFormItem label="Confirm Password">
+      <NFormItem label="Confirm Password" required>
         <NInput v-model:value="passwordConfirm" type="password" show-password-on="click" />
       </NFormItem>
       <NAlert v-if="passwordMismatch" type="warning" style="margin-bottom: 16px;">Passwords do not match.</NAlert>
