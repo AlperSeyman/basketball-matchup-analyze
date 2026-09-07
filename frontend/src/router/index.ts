@@ -6,6 +6,7 @@ import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import HomeView from '@/views/HomeView.vue'
+import TeamView from '@/views/TeamView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,11 @@ const router = createRouter({
       name: 'profile',
       component: ProfileView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/teams/:id',
+      name: 'team-detail',
+      component: TeamView
     }
   ]
 })

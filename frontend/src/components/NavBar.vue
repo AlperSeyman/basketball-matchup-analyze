@@ -30,7 +30,6 @@ const handleLogout = async () => {
 }
 </script>
 
-
 <template>
   <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
     <NButton text style="font-size: 18px; font-weight: bold;" @click="router.push({ name: 'main' })">
@@ -48,7 +47,7 @@ const handleLogout = async () => {
       </template>
 
       <NDropdown :options="themeOptions" @select="handleThemeSelect">
-        <NButton quaternary size="small">{{ themeLabel }}</NButton>
+        <NButton quaternary size="small">{{ themeLabel }} ›</NButton>
       </NDropdown>
     </NSpace>
   </div>
