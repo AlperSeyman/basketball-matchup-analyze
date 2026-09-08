@@ -7,6 +7,7 @@ import ResetPasswordView from '@/views/ResetPasswordView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import HomeView from '@/views/HomeView.vue'
 import TeamView from '@/views/TeamView.vue'
+import PlayerView from '@/views/PlayerView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +47,11 @@ const router = createRouter({
       path: '/teams/:id',
       name: 'team-detail',
       component: TeamView
+    },
+    {
+      path: '/player/:id',
+      name: 'player-detail',
+      component: PlayerView,
     }
   ]
 })

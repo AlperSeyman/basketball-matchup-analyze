@@ -3,6 +3,7 @@ import { ref, onMounted, watch, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NCard, NSpin, NDataTable, NSelect } from 'naive-ui'
 import { divisions } from '@/data/teams'
+import { getStandings, getTeamRoster, getTeamStatistics } from '@/api/espn'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,7 +17,14 @@ const conferenceAbbr = ref('')
 
 const columns = [
   { title: '#', key: 'jersey' },
-  { title: 'Name', key: 'displayName' },
+  {
+    title: 'Name',
+    key: 'displayName',
+    render: (row: any) => h('a', {
+      style: 'cursor: pointer; color: inherit; text-decoration: underline;',
+      onClick: () => router.push({ name: 'player-detail', params: { id: row.id }, query: { team: route.params.id } }),
+    }, row.displayName),
+  },
   { title: 'Pos', key: 'position', render: (row: any) => row.position?.abbreviation },
   { title: 'Height', key: 'displayHeight' },
   { title: 'Weight', key: 'displayWeight' },
@@ -55,15 +63,13 @@ const loadTeamData = async () => {
   detailedStats.value = []
   roster.value = []
 
-  const response = await fetch(`https://site.api.espn.com/apis/v2/sports/basketball/nba/standings`)
-  const data = await response.json()
+  const teamId = String(route.params.id)
+  const data = await getStandings()
 
-  const rosterResponse = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${route.params.id}/roster`)
-  const rosterData = await rosterResponse.json()
+  const rosterData = await getTeamRoster(teamId)
   roster.value = rosterData.athletes
 
-  const statsResponse = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${route.params.id}/statistics`)
-  const statsData = await statsResponse.json()
+  const statsData = await getTeamStatistics(teamId)
   teamColor.value = statsData.team.color
   teamLogo.value = statsData.team.logo
 
@@ -75,7 +81,7 @@ const loadTeamData = async () => {
 
   for (const conference of data.children) {
     for (const entry of conference.standings.entries) {
-      if (entry.team.id === route.params.id) {
+      if (entry.team.id === teamId) {
         team.value = entry.team
         stats.value = entry.stats
         conferenceAbbr.value = conference.abbreviation
