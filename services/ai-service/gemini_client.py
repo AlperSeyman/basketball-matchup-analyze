@@ -1,6 +1,7 @@
 from google import genai
-from schemas import MatchUpData
+from schemas import MatchUpData, PlayerMatchUpData
 from config import load
+
 
 def analyze_matchup(data: MatchUpData) -> str:
     config = load()
@@ -26,3 +27,24 @@ instead of guessing a reason
 
     return response.output_text
 
+
+def analyze_player_matchup(data: PlayerMatchUpData) -> str:
+    config = load()
+    prompt = f"""
+You are a basketball analyst. Compare these two NBA players using ONLY the real stats below.
+Write a short, clear analysis (3-4 paragraphs) for a fan.
+
+Player A: {data.player_a}
+Player A stats: {data.player_a_stats}
+
+Player B: {data.player_b}
+Player B stats: {data.player_b_stats}
+"""
+    client = genai.Client()
+
+    response = client.interactions.create(
+        model=config.models.gemini,
+        input=prompt,
+    )
+
+    return response.output_text

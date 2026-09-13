@@ -35,3 +35,8 @@ def get_player_season_averages(stats_data: dict) -> dict:
             latest_season = category["statistics"][-1]
             return dict(zip(category["names"], latest_season["stats"]))
     return {}
+
+def get_team_roster(team_id: str) -> dict:
+    response = httpx.get(f"{SITE_BASE}/teams/{team_id}/roster")
+    return response.json()
+
