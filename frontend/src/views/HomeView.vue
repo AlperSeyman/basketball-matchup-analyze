@@ -1,16 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NCard, NButton } from 'naive-ui'
+import { NCard, NInput } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import { divisions } from '@/data/teams'
-const router = useRouter()
+import { searchPlayers } from '@/api/espn'
 
+
+const router = useRouter()
 const failedLogos = ref(new Set<string>())
+const searchQuery = ref('')
+const searchResult = ref<any[]>([])
 
 const handleLogoError = (abbr: string) => {
   failedLogos.value.add(abbr)
 }
 
+const onSearch = async () => {
+  if (searchQuery.value.length < 2){
+    searchResult.value = []
+    return
+  }
+  searchResult.value = await searchPlayers(searchQuery.value)
+}
+
+const goToPlayer = (player: any) => {
+  const team = divisions.flatMap(d => d.teams).find(t => t.name === player.team)
+  router.push({name: 'player-detail', params: {id: player.id}, query: {team: team?.espnId} })
+}
 
 </script>
 
@@ -19,6 +35,19 @@ const handleLogoError = (abbr: string) => {
     <NCard title="Basketball Matchup Analyzer" style="margin-bottom: 24px;">
       <p>Welcome! Analyze basketball matchups using AI.</p>
     </NCard>
+
+    <NCard title="Search for a Player" style="margin-bottom: 24px;">
+      <NInput
+        v-model:value="searchQuery"
+        placeholder="Type a player's name..."
+        @input="onSearch"
+      />
+      <div v-for="player in searchResult" :key="player.id" style="padding: 8px 0; cursor: pointer;" @click="goToPlayer(player)">
+        {{ player.name }} — {{ player.team }}
+      </div>
+    </NCard>
+
+
 
     <h2 style="margin-bottom: 16px;">All Teams</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
