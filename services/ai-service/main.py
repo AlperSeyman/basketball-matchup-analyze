@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from db.session import engine
-from routers import health
+from routers import health, analyze
 from redis_client import redis_client
 
 
@@ -15,3 +15,4 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(health.router)
+app.include_router(analyze.router)

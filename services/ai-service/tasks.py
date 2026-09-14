@@ -2,7 +2,7 @@ from celery import Celery
 from config import load
 from schemas import MatchUpData, PlayerMatchUpData
 from espn_client import get_standings, get_team_record, get_player_stats, get_player_season_averages
-
+from gemini_client import analyze_matchup, analyze_player_matchup
 
 config = load()
 
@@ -37,3 +37,14 @@ def gather_player_matchup_data(player_a_id: str, player_a_name: str, player_b_id
         player_a_stats=player_a_stats,
         player_b_stats=player_b_stats,
     )
+
+
+@celery_app.task
+def run_team_analysis(team_a_id: str, team_a_name: str, team_b_id: str, team_b_name: str) -> str:
+    data = gather_matchup_data(team_a_id, team_a_name, team_b_id, team_b_name)
+    return analyze_matchup(data)
+
+@celery_app.task
+def run_player_analysis(player_a_id: str, player_a_name: str, player_b_id: str, player_b_name: str) -> str:
+    data = gather_player_matchup_data(player_a_id, player_a_name, player_b_id, player_b_name)
+    return analyze_player_matchup(data)
